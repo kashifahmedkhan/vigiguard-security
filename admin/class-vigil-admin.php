@@ -53,6 +53,9 @@ class Vigil_Admin {
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
 		$this->settings    = get_option( 'vigil_security_settings', array() );
+
+		// Add AJAX handlers.
+		add_action( 'wp_ajax_vigil_fix_all_issues', array( $this, 'ajax_fix_all_issues' ) );
 	}
 
 	/**
@@ -488,4 +491,126 @@ class Vigil_Admin {
 		// Set a flag so we know to reload the settings after save.
 		set_transient( 'vigil_security_settings_saved', true, 5 );
 	}
+
+/**
+	 * AJAX handler for "Fix All Issues" button.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ajax_fix_all_issues() {
+		// Verify nonce.
+		check_ajax_referer( 'vigil_security_nonce', 'nonce' );
+
+		// Check permissions.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'vigil-security' ) ) );
+		}
+
+		// Get current settings.
+		$settings = get_option( 'vigil_security_settings', array() );
+
+		// Store old health score.
+		$old_score = ! empty( $settings['health_score'] ) ? $settings['health_score'] : 0;
+
+		// Apply all safe hardening measures.
+		$settings['disable_xmlrpc']           = 1;
+		$settings['disable_file_edit']        = 1;
+		$settings['hide_wp_version']          = 1;
+		$settings['disable_user_enumeration'] = 1;
+		$settings['enable_security_headers']  = 1;
+		$settings['login_protection_enabled'] = 1;
+		$settings['activity_log_enabled']     = 1;
+
+		// Save settings.
+		update_option( 'vigil_security_settings', $settings );
+
+		// Recalculate health score.
+		$new_score = $this->calculate_health_score();
+
+		// Get updated health data.
+		$health_data = $this->get_health_grade( $new_score );
+
+		// Log the fix action.
+		$this->log_fix_all_event( $old_score, $new_score );
+
+		// Return success response.
+		wp_send_json_success(
+			array(
+				'message'     => __( 'All security issues have been fixed!', 'vigil-security' ),
+				'old_score'   => $old_score,
+				'new_score'   => $new_score,
+				'grade'       => $health_data['grade'],
+				'status'      => $health_data['status'],
+				'color'       => $health_data['color'],
+				'issues_fixed' => 6,
+			)
+		);
+	}
+
+	/**
+	 * Log the "Fix All" action to activity log.
+	 *
+	 * @since 1.0.0
+	 * @param int $old_score Old health score.
+	 * @param int $new_score New health score.
+	 */
+	private function log_fix_all_event( $old_score, $new_score ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'vigil_logs';
+
+		$user = wp_get_current_user();
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$wpdb->insert(
+			$table_name,
+			array(
+				'event_type'  => 'security_fixed',
+				'user_id'     => $user->ID,
+				'username'    => $user->user_login,
+				'ip_address'  => $this->get_user_ip(),
+				'description' => sprintf(
+					/* translators: 1: old score, 2: new score */
+					__( 'Applied all security fixes. Health score improved from %1$d to %2$d.', 'vigil-security' ),
+					$old_score,
+					$new_score
+				),
+				'severity'    => 'info',
+				'created_at'  => current_time( 'mysql' ),
+			),
+			array( '%s', '%d', '%s', '%s', '%s', '%s', '%s' )
+		);
+	}
+
+	/**
+	 * Get user's IP address.
+	 *
+	 * @since 1.0.0
+	 * @return string IP address.
+	 */
+	private function get_user_ip() {
+		$ip_keys = array(
+			'HTTP_CF_CONNECTING_IP',
+			'HTTP_X_FORWARDED_FOR',
+			'HTTP_X_REAL_IP',
+			'REMOTE_ADDR',
+	);
+
+	foreach ( $ip_keys as $key ) {
+		if ( ! empty( $_SERVER[ $key ] ) ) {
+			$ip = sanitize_text_field( wp_unslash( $_SERVER[ $key ] ) );
+
+			if ( strpos( $ip, ',' ) !== false ) {
+				$ip_array = explode( ',', $ip );
+				$ip       = trim( $ip_array[0] );
+			}
+
+			if ( filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+				return $ip;
+			}
+		}
+	}
+
+	return '0.0.0.0';
+	}
+
 }
