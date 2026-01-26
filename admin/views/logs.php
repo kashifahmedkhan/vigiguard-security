@@ -59,7 +59,20 @@ if ( ! defined( 'WPINC' ) ) {
 									}
 									?>
 								</td>
-								<td><code><?php echo esc_html( $log->ip_address ); ?></code></td>
+								<td>
+									<code>
+										<?php
+										$ip_display = $log->ip_address;
+										// Make localhost IPs more readable
+										if ( $ip_display === '::1' ) {
+											$ip_display = '::1 (localhost IPv6)';
+										} elseif ( $ip_display === '127.0.0.1' ) {
+											$ip_display = '127.0.0.1 (localhost)';
+										}
+										echo esc_html( $ip_display );
+										?>
+									</code>
+								</td>
 								<td>
 									<?php
 									$severity_colors = array(

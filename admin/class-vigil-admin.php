@@ -53,9 +53,11 @@ class Vigil_Admin {
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
 		$this->settings    = get_option( 'vigil_security_settings', array() );
-
+		
 		// Add AJAX handlers.
 		add_action( 'wp_ajax_vigil_fix_all_issues', array( $this, 'ajax_fix_all_issues' ) );
+		add_action( 'wp_ajax_vigil_dismiss_notice', array( $this, 'ajax_dismiss_notice' ) );
+	
 	}
 
 	/**
@@ -166,6 +168,9 @@ class Vigil_Admin {
 			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'vigil-security' ) );
 		}
 
+		// Refresh settings from database to ensure we have latest values
+		$this->settings = get_option( 'vigil_security_settings', array() );
+
 		// Calculate current health score.
 		$health_score = $this->calculate_health_score();
 
@@ -195,11 +200,19 @@ class Vigil_Admin {
 			$this->save_settings();
 		}
 
-		// Add helpful notice about security headers.
-		$settings = get_option( 'vigil_security_settings', array() );
-		if ( ! empty( $settings['enable_security_headers'] ) ) {
+		// Refresh settings from database to ensure we have latest values.
+		$this->settings = get_option( 'vigil_security_settings', array() );
+
+		// Add helpful notice about security headers (dismissible).
+		$user_id      = get_current_user_id();
+		$is_dismissed = get_user_meta( $user_id, 'vigil_dismissed_headers_notice', true );
+		
+		// Only show if headers enabled AND not dismissed.
+		$should_show = ! empty( $this->settings['enable_security_headers'] ) && ! $is_dismissed;
+		
+		if ( $should_show ) {
 			?>
-			<div class="notice notice-info">
+			<div class="notice notice-info is-dismissible vigil-dismissible-notice" data-notice-id="headers">
 				<p>
 					<strong><?php esc_html_e( 'Security Headers Active!', 'vigil-security' ); ?></strong>
 					<?php esc_html_e( 'Security headers are being sent on all frontend pages. To verify, open your homepage (not admin) and check browser DevTools → Network → Response Headers.', 'vigil-security' ); ?>
@@ -239,6 +252,9 @@ class Vigil_Admin {
 	private function calculate_health_score() {
 		$score  = 0;
 		$checks = 10; // Total number of checks.
+
+		// Refresh settings to get latest values
+		$this->settings = get_option( 'vigil_security_settings', array() );
 
 		// Check 1: XML-RPC disabled (10 points).
 		if ( ! empty( $this->settings['disable_xmlrpc'] ) ) {
@@ -492,7 +508,7 @@ class Vigil_Admin {
 		set_transient( 'vigil_security_settings_saved', true, 5 );
 	}
 
-/**
+	/**
 	 * AJAX handler for "Fix All Issues" button.
 	 *
 	 * @since 1.0.0
@@ -506,25 +522,26 @@ class Vigil_Admin {
 			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'vigil-security' ) ) );
 		}
 
-		// Get current settings.
-		$settings = get_option( 'vigil_security_settings', array() );
+		// Get current settings and calculate old score FIRST
+		$this->settings = get_option( 'vigil_security_settings', array() );
+		$old_score      = $this->calculate_health_score(); // Calculate BEFORE making changes
 
-		// Store old health score.
-		$old_score = ! empty( $settings['health_score'] ) ? $settings['health_score'] : 0;
-
-		// Apply all safe hardening measures.
-		$settings['disable_xmlrpc']           = 1;
-		$settings['disable_file_edit']        = 1;
-		$settings['hide_wp_version']          = 1;
-		$settings['disable_user_enumeration'] = 1;
-		$settings['enable_security_headers']  = 1;
-		$settings['login_protection_enabled'] = 1;
-		$settings['activity_log_enabled']     = 1;
+		// Now apply all safe hardening measures.
+		$this->settings['disable_xmlrpc']           = 1;
+		$this->settings['disable_file_edit']        = 1;
+		$this->settings['hide_wp_version']          = 1;
+		$this->settings['disable_user_enumeration'] = 1;
+		$this->settings['enable_security_headers']  = 1;
+		$this->settings['login_protection_enabled'] = 1;
+		$this->settings['activity_log_enabled']     = 1;
 
 		// Save settings.
-		update_option( 'vigil_security_settings', $settings );
+		update_option( 'vigil_security_settings', $this->settings );
 
-		// Recalculate health score.
+		// IMPORTANT: Refresh settings from database before recalculating
+		$this->settings = get_option( 'vigil_security_settings', array() );
+		
+		// Recalculate health score with NEW settings.
 		$new_score = $this->calculate_health_score();
 
 		// Get updated health data.
@@ -536,13 +553,14 @@ class Vigil_Admin {
 		// Return success response.
 		wp_send_json_success(
 			array(
-				'message'     => __( 'All security issues have been fixed!', 'vigil-security' ),
-				'old_score'   => $old_score,
-				'new_score'   => $new_score,
-				'grade'       => $health_data['grade'],
-				'status'      => $health_data['status'],
-				'color'       => $health_data['color'],
+				'message'      => __( 'All security issues have been fixed!', 'vigil-security' ),
+				'old_score'    => $old_score,
+				'new_score'    => $new_score,
+				'grade'        => $health_data['grade'],
+				'status'       => $health_data['status'],
+				'color'        => $health_data['color'],
 				'issues_fixed' => 6,
+				'redirect_url' => admin_url( 'admin.php?page=vigil-security&fixed=1' ), // Optional: for fallback
 			)
 		);
 	}
@@ -611,6 +629,71 @@ class Vigil_Admin {
 	}
 
 	return '0.0.0.0';
+	}
+
+	/**
+	 * AJAX handler for dismissing admin notices.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ajax_dismiss_notice() {
+		// Verify nonce.
+		check_ajax_referer( 'vigil_security_nonce', 'nonce' );
+
+		// Check permissions.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'vigil-security' ) ) );
+		}
+
+		// Get notice ID.
+		$notice_id = isset( $_POST['notice_id'] ) ? sanitize_text_field( wp_unslash( $_POST['notice_id'] ) ) : '';
+
+		if ( empty( $notice_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid notice ID', 'vigil-security' ) ) );
+		}
+
+		// Save dismissal in user meta.
+		$meta_key = 'vigil_dismissed_' . $notice_id . '_notice';
+		update_user_meta( get_current_user_id(), $meta_key, true );
+
+		wp_send_json_success( array( 
+			'message' => __( 'Notice dismissed', 'vigil-security' ),
+			'meta_key' => $meta_key,
+			'user_id' => get_current_user_id()
+		) );
+	}
+
+	/**
+	 * Handle notice dismissal via URL parameter.
+	 * This catches the dismissal immediately before page reload.
+	 *
+	 * @since 1.0.0
+	 */
+	public function handle_notice_dismissal() {
+		// Check if this is a notice dismissal request
+		if ( isset( $_GET['vigil_dismiss'] ) && isset( $_GET['vigil_nonce'] ) ) {
+			// Verify nonce
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['vigil_nonce'] ) ), 'vigil_dismiss_notice' ) ) {
+				return;
+			}
+
+			// Check permissions
+			if ( ! current_user_can( 'manage_options' ) ) {
+				return;
+			}
+
+			// Get notice ID
+			$notice_id = sanitize_text_field( wp_unslash( $_GET['vigil_dismiss'] ) );
+
+			// Save dismissal
+			$meta_key = 'vigil_dismissed_' . $notice_id . '_notice';
+			update_user_meta( get_current_user_id(), $meta_key, true );
+
+			// Redirect to clean URL (remove parameters)
+			$redirect_url = remove_query_arg( array( 'vigil_dismiss', 'vigil_nonce' ) );
+			wp_safe_redirect( $redirect_url );
+			exit;
+		}
 	}
 
 }

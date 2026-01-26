@@ -66,11 +66,17 @@ class Vigil_Core {
 	 * @access private
 	 */
 	private function load_dependencies() {
-		// Load module files.
-		require_once VIGIL_SECURITY_PATH . 'includes/modules/class-login-protection.php';
-		require_once VIGIL_SECURITY_PATH . 'includes/modules/class-hardening.php';
-		// require_once VIGIL_SECURITY_PATH . 'includes/modules/class-activity-log.php';
-		// require_once VIGIL_SECURITY_PATH . 'includes/modules/class-health-score.php';
+		// Load module files with existence check.
+		$login_protection_file = VIGIL_SECURITY_PATH . 'includes/modules/class-login-protection.php';
+		$hardening_file        = VIGIL_SECURITY_PATH . 'includes/modules/class-hardening.php';
+		
+		if ( file_exists( $login_protection_file ) ) {
+			require_once $login_protection_file;
+		}
+		
+		if ( file_exists( $hardening_file ) ) {
+			require_once $hardening_file;
+		}
 
 		// Load admin class.
 		require_once VIGIL_SECURITY_PATH . 'admin/class-vigil-admin.php';
@@ -181,52 +187,17 @@ class Vigil_Core {
 	 * @since 1.0.0
 	 */
 	private function init_modules() {
-		// Initialize login protection.
-		new \Vigil_Security\Modules\Login_Protection();
+		// Initialize login protection (only if class exists).
+		if ( class_exists( '\Vigil_Security\Modules\Login_Protection' ) ) {
+			new \Vigil_Security\Modules\Login_Protection();
+		}
 
-		// Initialize hardening.
-		new \Vigil_Security\Modules\Hardening();
+		// Initialize hardening (only if class exists).
+		if ( class_exists( '\Vigil_Security\Modules\Hardening' ) ) {
+			new \Vigil_Security\Modules\Hardening();
+		}
 	}
 
-	// /**
-	//  * Apply quick hardening rules based on settings.
-	//  * This is a temporary measure until modules are built in future prompts.
-	//  *
-	//  * @since 1.0.0
-	//  */
-	// private function apply_quick_hardening() {
-	// 	$settings = get_option( 'vigil_security_settings', array() );
-
-	// 	// Hide WordPress version.
-	// 	if ( ! empty( $settings['hide_wp_version'] ) ) {
-	// 		remove_action( 'wp_head', 'wp_generator' );
-	// 		add_filter( 'the_generator', '__return_empty_string' );
-			
-	// 		// Remove version from scripts and styles.
-	// 		add_filter( 'style_loader_src', array( $this, 'remove_version_from_assets' ), 9999 );
-	// 		add_filter( 'script_loader_src', array( $this, 'remove_version_from_assets' ), 9999 );
-	// 	}
-
-	// 	// Disable XML-RPC.
-	// 	if ( ! empty( $settings['disable_xmlrpc'] ) ) {
-	// 		add_filter( 'xmlrpc_enabled', '__return_false' );
-	// 	}
-
-	// 	// Disable file editing.
-	// 	if ( ! empty( $settings['disable_file_edit'] ) && ! defined( 'DISALLOW_FILE_EDIT' ) ) {
-	// 		define( 'DISALLOW_FILE_EDIT', true );
-	// 	}
-
-	// 	// Block user enumeration.
-	// 	if ( ! empty( $settings['disable_user_enumeration'] ) ) {
-	// 		add_action( 'template_redirect', array( $this, 'block_user_enumeration' ) );
-	// 	}
-
-	// 	// Add security headers.
-	// 	if ( ! empty( $settings['enable_security_headers'] ) ) {
-	// 		add_action( 'send_headers', array( $this, 'add_security_headers' ) );
-	// 	}
-	// }
 
 	/**
 	 * Remove WordPress version from asset URLs.
