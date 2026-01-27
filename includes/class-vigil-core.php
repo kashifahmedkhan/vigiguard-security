@@ -69,6 +69,7 @@ class Vigil_Core {
 		// Load module files with existence check.
 		$login_protection_file = VIGIL_SECURITY_PATH . 'includes/modules/class-login-protection.php';
 		$hardening_file        = VIGIL_SECURITY_PATH . 'includes/modules/class-hardening.php';
+		$file_integrity_file   = VIGIL_SECURITY_PATH . 'includes/modules/class-file-integrity.php';  // Add this
 		
 		if ( file_exists( $login_protection_file ) ) {
 			require_once $login_protection_file;
@@ -76,6 +77,10 @@ class Vigil_Core {
 		
 		if ( file_exists( $hardening_file ) ) {
 			require_once $hardening_file;
+		}
+		
+		if ( file_exists( $file_integrity_file ) ) {  // Add this
+			require_once $file_integrity_file;
 		}
 
 		// Load admin class.
@@ -195,6 +200,11 @@ class Vigil_Core {
 		// Initialize hardening (only if class exists).
 		if ( class_exists( '\Vigil_Security\Modules\Hardening' ) ) {
 			new \Vigil_Security\Modules\Hardening();
+		}
+
+		// Initialize file integrity (only if class exists).  // Add this
+		if ( class_exists( '\Vigil_Security\Modules\File_Integrity' ) ) {
+			new \Vigil_Security\Modules\File_Integrity();
 		}
 	}
 

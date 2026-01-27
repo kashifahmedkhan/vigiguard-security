@@ -57,7 +57,8 @@ class Vigil_Admin {
 		// Add AJAX handlers.
 		add_action( 'wp_ajax_vigil_fix_all_issues', array( $this, 'ajax_fix_all_issues' ) );
 		add_action( 'wp_ajax_vigil_dismiss_notice', array( $this, 'ajax_dismiss_notice' ) );
-	
+		add_action( 'wp_ajax_vigil_unlock_ip', array( $this, 'ajax_unlock_ip' ) ); 
+		add_action( 'wp_ajax_vigil_run_file_check', array( $this, 'ajax_run_file_check' ) );  
 	}
 
 	/**
@@ -694,6 +695,80 @@ class Vigil_Admin {
 			wp_safe_redirect( $redirect_url );
 			exit;
 		}
+	}
+
+	/**
+	 * AJAX handler for unlocking an IP address.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ajax_unlock_ip() {
+		// Verify nonce.
+		check_ajax_referer( 'vigil_security_nonce', 'nonce' );
+
+		// Check permissions.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'vigil-security' ) ) );
+		}
+
+		// Get IP address.
+		$ip = isset( $_POST['ip'] ) ? sanitize_text_field( wp_unslash( $_POST['ip'] ) ) : '';
+
+		if ( empty( $ip ) || ! filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid IP address', 'vigil-security' ) ) );
+		}
+
+		// Unlock the IP.
+		if ( class_exists( '\Vigil_Security\Modules\Login_Protection' ) ) {
+			$login_protection = new \Vigil_Security\Modules\Login_Protection();
+			$result           = $login_protection->unlock_ip( $ip );
+
+			if ( $result ) {
+				wp_send_json_success( array(
+					'message' => sprintf(
+						/* translators: %s: IP address */
+						__( 'IP address %s has been unlocked.', 'vigil-security' ),
+						$ip
+					),
+				) );
+			}
+		}
+
+		wp_send_json_error( array( 'message' => __( 'Failed to unlock IP address', 'vigil-security' ) ) );
+	}
+
+	/**
+	 * AJAX handler for running manual file integrity check.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ajax_run_file_check() {
+		// Verify nonce.
+		check_ajax_referer( 'vigil_security_nonce', 'nonce' );
+
+		// Check permissions.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'vigil-security' ) ) );
+		}
+
+		// Run file check.
+		if ( class_exists( '\Vigil_Security\Modules\File_Integrity' ) ) {
+			$file_integrity = new \Vigil_Security\Modules\File_Integrity();
+			$results        = $file_integrity->run_file_check();
+
+			if ( isset( $results['error'] ) ) {
+				wp_send_json_error( array( 'message' => $results['error'] ) );
+			}
+
+			wp_send_json_success( array(
+				'message'    => __( 'File integrity scan completed!', 'vigil-security' ),
+				'checked'    => $results['checked'],
+				'modified'   => count( $results['modified'] ),
+				'unexpected' => count( $results['unexpected'] ),
+			) );
+		}
+
+		wp_send_json_error( array( 'message' => __( 'File integrity module not available', 'vigil-security' ) ) );
 	}
 
 }

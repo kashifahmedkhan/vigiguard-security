@@ -267,6 +267,109 @@
 			});
 		});
 
+		/**
+		 * Handle IP unlock button clicks.
+		 */
+		$(document).on('click', '.vigil-unlock-ip-btn', function(e) {
+			e.preventDefault();
+			
+			const $button = $(this);
+			const ip = $button.data('ip');
+			const $row = $button.closest('tr');
+			
+			if (!confirm('Unlock IP address ' + ip + '?')) {
+				return;
+			}
+			
+			// Disable button
+			$button.prop('disabled', true).text('Unlocking...');
+			
+			// Send AJAX request
+			$.ajax({
+				url: vigilSecurity.ajaxUrl,
+				type: 'POST',
+				data: {
+					action: 'vigil_unlock_ip',
+					nonce: vigilSecurity.nonce,
+					ip: ip
+				},
+				success: function(response) {
+					if (response.success) {
+						// Remove row with fade effect
+						$row.fadeOut(300, function() {
+							$(this).remove();
+							
+							// If no more rows, hide the entire table
+							if ($('.vigil-locked-ips-card tbody tr').length === 0) {
+								$('.vigil-locked-ips-card').fadeOut(300, function() {
+									$(this).remove();
+								});
+							}
+						});
+					} else {
+						alert('Error: ' + response.data.message);
+						$button.prop('disabled', false).text('Unlock');
+					}
+				},
+				error: function() {
+					alert('An error occurred. Please try again.');
+					$button.prop('disabled', false).text('Unlock');
+				}
+			});
+		});
+
+		/**
+		 * Handle manual file integrity check button.
+		 */
+		$(document).on('click', '.vigil-run-file-check-btn', function(e) {
+			e.preventDefault();
+			
+			const $button = $(this);
+			const originalHtml = $button.html();
+			
+			// Disable button and show loading
+			$button.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Scanning files...');
+			
+			// Send AJAX request
+			$.ajax({
+				url: vigilSecurity.ajaxUrl,
+				type: 'POST',
+				data: {
+					action: 'vigil_run_file_check',
+					nonce: vigilSecurity.nonce
+				},
+				success: function(response) {
+					if (response.success) {
+						const data = response.data;
+						
+						// Show success message
+						$button.html('<span class="dashicons dashicons-yes"></span> Scan Complete!').css('background-color', '#10b981');
+						
+						// Show results summary
+						const resultMsg = `File scan completed!\n\nFiles checked: ${data.checked}\nModified files: ${data.modified}\nUnexpected files: ${data.unexpected}`;
+						
+						if (data.modified > 0 || data.unexpected > 0) {
+							alert(resultMsg + '\n\nSecurity issues detected! Check your email for details.');
+						} else {
+							alert(resultMsg + '\n\nAll core files are intact!');
+						}
+						
+						// Reload page after 2 seconds to show updated results
+						setTimeout(function() {
+							location.reload();
+						}, 2000);
+					} else {
+						alert('Error: ' + response.data.message);
+						$button.prop('disabled', false).html(originalHtml);
+					}
+				},
+				error: function() {
+					alert('An error occurred. Please try again.');
+					$button.prop('disabled', false).html(originalHtml);
+				}
+			});
+		});
+
 	});
 
 })(jQuery);

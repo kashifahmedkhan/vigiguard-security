@@ -121,13 +121,18 @@ class Hardening {
 	}
 
 	/**
-	 * Block user REST API endpoint.
+	 * Block user REST API endpoint for unauthenticated requests only.
 	 *
 	 * @since 1.0.0
-	 * @param \WP_Error|null|bool $result Error from previous authentication handler, null if none, true if user authenticated.
+	 * @param \WP_Error|null|bool $result Error from previous authentication handler.
 	 * @return \WP_Error|null|bool Authentication result.
 	 */
 	public function block_user_rest_endpoint( $result ) {
+		// Allow if user is logged in and is admin.
+		if ( is_user_logged_in() && current_user_can( 'manage_options' ) ) {
+			return $result;
+		}
+
 		global $wp;
 
 		if ( isset( $wp->query_vars['rest_route'] ) && strpos( $wp->query_vars['rest_route'], '/wp/v2/users' ) !== false ) {

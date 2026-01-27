@@ -9,8 +9,7 @@
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
 	die;
-}
-?>
+} ?>
 
 <div class="wrap vigil-wrap">
 	<h1 class="vigil-page-title">
@@ -163,5 +162,147 @@ if ( ! defined( 'WPINC' ) ) {
 				</div>
 			</div>
 		</div>
-	</div>
-</div>
+
+		<!-- Locked IPs Widget -->
+		<?php
+		// Get locked IPs if login protection module is available.
+		if ( class_exists( '\Vigil_Security\Modules\Login_Protection' ) ) {
+			$login_protection = new \Vigil_Security\Modules\Login_Protection();
+			$locked_ips       = $login_protection->get_locked_ips();
+
+			if ( ! empty( $locked_ips ) ) :
+				?>
+				<div class="vigil-card vigil-locked-ips-card" style="grid-column: 1 / -1;">
+					<div class="vigil-card-header">
+						<h2><?php esc_html_e( 'Currently Blocked IP Addresses', 'vigil-security' ); ?></h2>
+					</div>
+					<div class="vigil-card-body">
+						<table class="wp-list-table widefat fixed striped">
+							<thead>
+								<tr>
+									<th><?php esc_html_e( 'IP Address', 'vigil-security' ); ?></th>
+									<th><?php esc_html_e( 'Username Attempted', 'vigil-security' ); ?></th>
+									<th><?php esc_html_e( 'Failed Attempts', 'vigil-security' ); ?></th>
+									<th><?php esc_html_e( 'Locked At', 'vigil-security' ); ?></th>
+									<th><?php esc_html_e( 'Time Remaining', 'vigil-security' ); ?></th>
+									<th><?php esc_html_e( 'Actions', 'vigil-security' ); ?></th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php foreach ( $locked_ips as $lock ) : ?>
+									<tr>
+										<td><code><?php echo esc_html( $lock['ip'] ); ?></code></td>
+										<td><?php echo esc_html( $lock['attempted_user'] ); ?></td>
+										<td><?php echo esc_html( $lock['attempt_count'] ); ?></td>
+										<td>
+											<?php
+											echo esc_html(
+												wp_date(
+													get_option( 'date_format' ) . ' ' . get_option( 'time_format' ),
+													$lock['locked_at']
+												)
+											);
+											?>
+										</td>
+										<td>
+											<?php
+											$minutes = ceil( $lock['remaining_time'] / 60 );
+											printf(
+												/* translators: %d: minutes remaining */
+												esc_html( _n( '%d minute', '%d minutes', $minutes, 'vigil-security' ) ),
+												esc_html( $minutes )
+											);
+											?>
+										</td>
+										<td>
+											<button 
+												type="button" 
+												class="button button-small vigil-unlock-ip-btn" 
+												data-ip="<?php echo esc_attr( $lock['ip'] ); ?>"
+											>
+												<?php esc_html_e( 'Unlock', 'vigil-security' ); ?>
+											</button>
+										</td>
+									</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<?php
+			endif;
+		}
+		?>
+
+		<!-- File Integrity Widget -->
+		<?php
+		// Get last file check results.
+		$last_check = get_option( 'vigil_last_file_check', false );
+		if ( ! empty( $this->settings['file_integrity_enabled'] ) ) :
+			?>
+			<div class="vigil-card vigil-file-integrity-card" style="grid-column: 1 / -1;">
+				<div class="vigil-card-header">
+					<h2><?php esc_html_e( 'File Integrity Monitor', 'vigil-security' ); ?></h2>
+				</div>
+				<div class="vigil-card-body">
+					<?php if ( $last_check ) : ?>
+						<div class="vigil-file-check-results">
+							<p>
+								<strong><?php esc_html_e( 'Last Scan:', 'vigil-security' ); ?></strong>
+								<?php
+								echo esc_html(
+									wp_date(
+										get_option( 'date_format' ) . ' ' . get_option( 'time_format' ),
+										$last_check['timestamp']
+									)
+								);
+								?>
+							</p>
+							<div class="vigil-file-stats">
+								<div class="vigil-file-stat">
+									<span class="vigil-file-stat-number"><?php echo esc_html( $last_check['results']['checked'] ); ?></span>
+									<span class="vigil-file-stat-label"><?php esc_html_e( 'Files Checked', 'vigil-security' ); ?></span>
+								</div>
+								<div class="vigil-file-stat <?php echo ! empty( $last_check['results']['modified'] ) ? 'vigil-file-stat-warning' : ''; ?>">
+									<span class="vigil-file-stat-number"><?php echo esc_html( count( $last_check['results']['modified'] ) ); ?></span>
+									<span class="vigil-file-stat-label"><?php esc_html_e( 'Modified', 'vigil-security' ); ?></span>
+								</div>
+								<div class="vigil-file-stat <?php echo ! empty( $last_check['results']['unexpected'] ) ? 'vigil-file-stat-critical' : ''; ?>">
+									<span class="vigil-file-stat-number"><?php echo esc_html( count( $last_check['results']['unexpected'] ) ); ?></span>
+									<span class="vigil-file-stat-label"><?php esc_html_e( 'Unexpected', 'vigil-security' ); ?></span>
+								</div>
+							</div>
+
+							<?php if ( ! empty( $last_check['results']['modified'] ) || ! empty( $last_check['results']['unexpected'] ) ) : ?>
+								<div class="vigil-file-alert">
+									<span class="dashicons dashicons-warning" style="color: #dc2626;"></span>
+									<strong><?php esc_html_e( 'Security Alert:', 'vigil-security' ); ?></strong>
+									<?php esc_html_e( 'Modified or unexpected files detected. Check your email for details.', 'vigil-security' ); ?>
+								</div>
+							<?php else : ?>
+								<div class="vigil-file-success">
+									<span class="dashicons dashicons-yes-alt" style="color: #10b981;"></span>
+									<?php esc_html_e( 'All core files are intact!', 'vigil-security' ); ?>
+								</div>
+							<?php endif; ?>
+
+							<button type="button" class="button vigil-run-file-check-btn" style="margin-top: 15px;">
+								<span class="dashicons dashicons-update-alt"></span>
+								<?php esc_html_e( 'Run Manual Scan', 'vigil-security' ); ?>
+							</button>
+						</div>
+					<?php else : ?>
+						<p><?php esc_html_e( 'No file integrity scan has been run yet.', 'vigil-security' ); ?></p>
+						<button type="button" class="button button-primary vigil-run-file-check-btn">
+							<span class="dashicons dashicons-update-alt"></span>
+							<?php esc_html_e( 'Run First Scan', 'vigil-security' ); ?>
+						</button>
+					<?php endif; ?>
+				</div>
+			</div>
+			<?php
+		endif;
+		?>
+
+	</div><!-- .vigil-dashboard -->
+</div><!-- .wrap -->
