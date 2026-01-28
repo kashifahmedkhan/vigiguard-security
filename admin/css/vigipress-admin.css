@@ -483,6 +483,11 @@
 	vertical-align: middle;
 	margin-right: 5px;
 }
+
+.dashicons, .dashicons-before:before{
+	vertical-align: text-bottom !important;
+}
+
 /* === Responsive === */
 @media (max-width: 782px) {
 	.vigipress-file-stats {
