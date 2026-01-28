@@ -12,6 +12,11 @@
 
 namespace Vigil_Security\Admin;
 
+// If this file is called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -208,7 +213,10 @@ class Vigil_Admin {
 
 		// Handle form submission.
 		if ( isset( $_POST['vigil_security_settings_nonce'] ) ) {
-			$this->save_settings();
+			// Verify nonce before processing
+			if ( wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['vigil_security_settings_nonce'] ) ), 'vigil_security_save_settings' ) ) {
+				$this->save_settings();
+			}
 		}
 
 		// Refresh settings from database to ensure we have latest values.

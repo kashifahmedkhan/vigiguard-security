@@ -12,6 +12,11 @@
 
 namespace Vigil_Security;
 
+// If this file is called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * The core plugin class.
  *
@@ -56,7 +61,6 @@ class Vigil_Core {
 		$this->version     = VIGIL_SECURITY_VERSION;
 
 		$this->load_dependencies();
-		$this->set_locale();
 		$this->define_admin_hooks();
 	}
 
@@ -100,29 +104,6 @@ class Vigil_Core {
 
 		// Load admin class.
 		require_once VIGIL_SECURITY_PATH . 'admin/class-vigil-admin.php';
-	}
-
-	/**
-	 * Define the locale for this plugin for internationalization.
-	 *
-	 * @since  1.0.0
-	 * @access private
-	 */
-	private function set_locale() {
-		add_action( 'plugins_loaded', array( $this, 'load_plugin_textdomain' ) );
-	}
-
-	/**
-	 * Load the plugin text domain for translation.
-	 *
-	 * @since 1.0.0
-	 */
-	public function load_plugin_textdomain() {
-		load_plugin_textdomain(
-			'vigil-security',
-			false,
-			dirname( VIGIL_SECURITY_BASENAME ) . '/languages/'
-		);
 	}
 
 	/**

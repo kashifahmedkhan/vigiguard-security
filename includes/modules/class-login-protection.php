@@ -12,6 +12,11 @@
 
 namespace Vigil_Security\Modules;
 
+// If this file is called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Login Protection class.
  *

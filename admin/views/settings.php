@@ -348,10 +348,18 @@ settings_errors( 'vigil_security_messages' );
 						<h3 style="margin-top: 0;"><?php esc_html_e( 'Data Removal Preview', 'vigil-security' ); ?></h3>
 						<p><?php esc_html_e( 'If you delete this plugin, the following data will be removed:', 'vigil-security' ); ?></p>
 						<ul style="margin-left: 20px;">
-							<li><?php printf( esc_html__( '%d plugin settings', 'vigil-security' ), esc_html( $stats['options'] ) ); ?></li>
-							<li><?php printf( esc_html__( '%d security log entries', 'vigil-security' ), esc_html( number_format_i18n( $stats['logs'] ) ) ); ?></li>
-							<li><?php printf( esc_html__( '%d user preferences', 'vigil-security' ), esc_html( $stats['user_meta'] ) ); ?></li>
-							<li><?php printf( esc_html__( '%d temporary cache entries', 'vigil-security' ), esc_html( $stats['transients'] ) ); ?></li>
+							<li><?php 
+							/* translators: %d: number of plugin settings */
+							printf( esc_html__( '%d plugin settings', 'vigil-security' ), esc_html( $stats['options'] ) ); ?></li>
+							<li><?php 
+							/* translators: %d: number of security log entries */
+							printf( esc_html__( '%d security log entries', 'vigil-security' ), esc_html( number_format_i18n( $stats['logs'] ) ) ); ?></li>
+							<li><?php 
+							/* translators: %d: number of user preferences */
+							printf( esc_html__( '%d user preferences', 'vigil-security' ), esc_html( $stats['user_meta'] ) ); ?></li>
+							<li><?php 
+							/* translators: %d: number of temporary cache entries */
+							printf( esc_html__( '%d temporary cache entries', 'vigil-security' ), esc_html( $stats['transients'] ) ); ?></li>
 						</ul>
 						<p>
 							<em>
