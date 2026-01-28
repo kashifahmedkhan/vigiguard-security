@@ -1,9 +1,9 @@
-Copyright (C) 2026 Kashif
+Copyright (C) 2026 Vigil Security Team
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
 "Project-Id-Version: Vigil Security 1.0.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/Vigil-Security\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugins/vigil-security\n"
 "Last-Translator: Vigil Security Team\n"
 "Language-Team: English <en@li.org>\n"
 "MIME-Version: 1.0\n"
