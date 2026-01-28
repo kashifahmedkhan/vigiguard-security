@@ -6,6 +6,8 @@
  *
  * @package    Vigil_Security
  * @subpackage Vigil_Security/includes/modules
+ * @since      1.0.0
+ * 
  */
 
 namespace Vigil_Security\Modules;
@@ -60,6 +62,7 @@ class File_Integrity {
 		global $wp_version;
 
 		// Include WordPress update functions
+		// Use WordPress core function if available
 		if ( ! function_exists( 'get_core_checksums' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/update.php';
 		}

@@ -2,8 +2,11 @@
 /**
  * Fired during plugin activation.
  *
+ * This class defines all code necessary to run during the plugin's activation.
+ *
  * @package    Vigil_Security
  * @subpackage Vigil_Security/includes
+ * @since      1.0.0
  */
 
 namespace Vigil_Security;

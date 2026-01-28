@@ -2,8 +2,12 @@
 /**
  * The admin-specific functionality of the plugin.
  *
+ * Defines the plugin name, version, and hooks for admin menu,
+ * settings, and AJAX handlers.
+ *
  * @package    Vigil_Security
  * @subpackage Vigil_Security/admin
+ * @since      1.0.0
  */
 
 namespace Vigil_Security\Admin;
@@ -621,10 +625,10 @@ class Vigil_Admin {
 	}
 
 	/**
-	 * Get user's IP address.
+	 * Get user's IP address (supports proxies and CDNs).
 	 *
 	 * @since 1.0.0
-	 * @return string IP address.
+	 * @return string User's IP address or 0.0.0.0 if unable to detect.
 	 */
 	private function get_user_ip() {
 		$ip_keys = array(
@@ -795,6 +799,8 @@ class Vigil_Admin {
 	/**
 	 * AJAX handler for resetting plugin to default settings.
 	 *
+	 * Resets all settings to factory defaults while preserving security logs.
+	 *
 	 * @since 1.0.0
 	 */
 	public function ajax_reset_plugin() {
@@ -854,6 +860,9 @@ class Vigil_Admin {
 
 	/**
 	 * AJAX handler for clearing all security logs.
+	 *
+	 * Permanently deletes all log entries from the database.
+	 * Logs the deletion action as a new entry.
 	 *
 	 * @since 1.0.0
 	 */

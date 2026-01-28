@@ -6,14 +6,16 @@
  * Version:           1.0.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
- * Author:            Your Name
- * Author URI:        https://yourwebsite.com
+ * Author:            Kashif
+ * Author URI:        https://profiles.wordpress.org/kashifahmedkhan/
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       vigil-security
  * Domain Path:       /languages
  *
  * @package Vigil_Security
+ * @since      1.0.0
+ * 
  */
 
 // If this file is called directly, abort.

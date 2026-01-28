@@ -6,6 +6,7 @@
  *
  * @package    Vigil_Security
  * @subpackage Vigil_Security/includes/modules
+ * @since      1.0.0
  */
 
 namespace Vigil_Security\Modules;

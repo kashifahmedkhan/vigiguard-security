@@ -6,6 +6,8 @@
  *
  * @package    Vigil_Security
  * @subpackage Vigil_Security/includes/modules
+ * @since      1.0.0
+ * 
  */
 
 namespace Vigil_Security\Modules;
@@ -69,13 +71,15 @@ class Login_Protection {
 	public function check_ip_blocked( $user ) {
 		$ip = $this->get_user_ip();
 
-		// Check if IP is currently locked out.
+		// Check if IP is currently locked out via transient.
+		// Transients auto-expire, so no manual cleanup needed.
 		$lockout_data = get_transient( 'vigil_lockout_' . md5( $ip ) );
 
 		if ( false !== $lockout_data ) {
+			// Calculate remaining lockout time.
 			$remaining_time = $lockout_data['unlock_time'] - time();
 
-			// Log the blocked attempt.
+			// Log the blocked attempt for audit trail.
 			$this->log_event(
 				'login_blocked',
 				0,
@@ -89,6 +93,7 @@ class Login_Protection {
 				'warning'
 			);
 
+			// Return WP_Error to prevent login.
 			return new \WP_Error(
 				'vigil_ip_blocked',
 				sprintf(
@@ -99,6 +104,7 @@ class Login_Protection {
 			);
 		}
 
+		// IP is not blocked, continue with authentication.
 		return $user;
 	}
 

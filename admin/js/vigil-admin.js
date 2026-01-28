@@ -2,6 +2,8 @@
  * Vigil Security Admin JavaScript
  *
  * @package Vigil_Security
+ * @since      1.0.0
+ * 
  */
 
 (function($) {
@@ -232,10 +234,8 @@
 			const $notice = $(this).closest('.notice');
 			const noticeId = $notice.data('notice-id');
 			
-			console.log('Dismiss clicked. Notice ID:', noticeId); // DEBUG
-			
 			if (!noticeId) {
-				console.error('No notice ID found');
+				console.error('Vigil Security: No notice ID found');
 				return;
 			}
 			
@@ -243,8 +243,6 @@
 			$notice.fadeOut(200, function() {
 				$(this).remove();
 			});
-			
-			console.log('Sending AJAX request...'); // DEBUG
 			
 			// Send AJAX to save dismissal
 			$.ajax({
@@ -255,14 +253,11 @@
 					nonce: vigilSecurity.nonce,
 					notice_id: noticeId
 				},
-				success: function(response) {
-					console.log('AJAX Response:', response); // DEBUG
-					if (!response.success) {
-						console.error('Failed to save notice dismissal:', response);
-					}
-				},
 				error: function(xhr, status, error) {
-					console.error('AJAX error:', status, error); // DEBUG
+					console.error('Vigil Security: Failed to save notice dismissal', {
+						status: status,
+						error: error
+					});
 				}
 			});
 		});

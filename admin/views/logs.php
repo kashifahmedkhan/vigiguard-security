@@ -4,6 +4,8 @@
  *
  * @package    Vigil_Security
  * @subpackage Vigil_Security/admin/views
+ * @since      1.0.0
+ * 
  */
 
 // If this file is called directly, abort.

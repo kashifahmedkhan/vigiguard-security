@@ -2,11 +2,12 @@
 /**
  * The core plugin class.
  *
- * This is used to define internationalization, admin-specific hooks, and
- * public-facing site hooks.
+ * This is used to define internationalization, admin-specific hooks,
+ * and module initialization.
  *
  * @package    Vigil_Security
  * @subpackage Vigil_Security/includes
+ * @since      1.0.0
  */
 
 namespace Vigil_Security;

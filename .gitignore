@@ -15,3 +15,7 @@ build/
 # IDE/Editor specific folders
 .vscode/
 .idea/
+
+# Private Audit and Quality Reports
+CODE-QUALITY.md
+SECURITY-AUDIT.md

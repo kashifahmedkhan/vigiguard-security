@@ -6,6 +6,7 @@
  * clicks "Delete" on the Plugins page.
  *
  * @package Vigil_Security
+ * @since      1.0.0
  */
 
 // If uninstall not called from WordPress, exit.

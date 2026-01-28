@@ -2,8 +2,11 @@
 /**
  * Fired during plugin deactivation.
  *
+ * This class defines all code necessary to run during the plugin's deactivation.
+ *
  * @package    Vigil_Security
  * @subpackage Vigil_Security/includes
+ * @since      1.0.0
  */
 
 namespace Vigil_Security;
