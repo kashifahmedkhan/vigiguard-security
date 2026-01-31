@@ -362,15 +362,15 @@ settings_errors( 'vigipress_security_messages' );
 							printf( esc_html__( '%d temporary cache entries', 'vigipress-security' ), esc_html( $stats['transients'] ) ); ?></li>
 						</ul>
 						<p>
-							<em>
+							<b>
 								<?php
 								if ( $keep_data ) {
-									esc_html_e( '✅ Data retention is ENABLED. Security logs will be preserved.', 'vigipress-security' );
+									esc_html_e( 'Note: Data retention is ENABLED. Security logs will be preserved.', 'vigipress-security' );
 								} else {
-									esc_html_e( '⚠️ Data retention is DISABLED. All data will be permanently deleted.', 'vigipress-security' );
+									esc_html_e( 'Note: Data retention is DISABLED. All data will be permanently deleted.', 'vigipress-security' );
 								}
 								?>
-							</em>
+							</b>
 						</p>
 					</div>
 				</div>

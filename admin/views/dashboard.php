@@ -306,5 +306,5 @@ if ( ! defined( 'WPINC' ) ) {
 		endif;
 		?>
 
-	</div><!-- .vigipress-dashboard -->
-</div><!-- .wrap -->
+	</div><!-- vigipress-dashboard -->
+</div><!-- wrap -->

@@ -33,7 +33,7 @@ VigiPress Security provides essential WordPress protection without complexity. O
 
 == Installation ==
 
-1. Upload the plugin files to `/wp-content/plugins/vigipress-security/`
+1. Upload the plugin files to `/wp-content/plugins/`
 2. Activate the plugin through the 'Plugins' screen
 3. Go to VigiPress Security → Dashboard
 4. Click "Fix All Issues (One Click)"
@@ -75,7 +75,7 @@ It's not recommended to run multiple security plugins. Choose one and stick with
 
 == Changelog ==
 
-= 1.0.0 - 2026-01-29 =
+= 1.0.0 - 2026-01-31 =
 * Initial release
 * One-click security hardening
 * Brute force login protection

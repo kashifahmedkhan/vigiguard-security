@@ -147,7 +147,7 @@
 			const $banner = $(`
 				<div class="notice notice-success vigipress-success-banner" style="display:none;">
 					<p>
-						<strong>🎉 Security Enhanced!</strong><br>
+						<strong>Security Enhanced!</strong><br>
 						Your security score improved from <strong>${data.old_score}</strong> to <strong>${data.new_score}</strong>. 
 						${data.issues_fixed} security issues were fixed automatically.
 						<a href="admin.php?page=vigipress-security-settings" style="margin-left: 10px;">View Settings →</a>
