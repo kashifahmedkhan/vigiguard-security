@@ -135,7 +135,7 @@ class VigiGuard_Admin {
 
 		wp_enqueue_style(
 			$this->plugin_name,
-			VIGIL_SECURITY_URL . 'admin/css/vigiguard-admin.css',
+			VIGIGUARD_SECURITY_URL . 'admin/css/vigiguard-admin.css',
 			array(),
 			$this->version,
 			'all'
@@ -156,7 +156,7 @@ class VigiGuard_Admin {
 
 		wp_enqueue_script(
 			$this->plugin_name,
-			VIGIL_SECURITY_URL . 'admin/js/vigiguard-admin.js',
+			VIGIGUARD_SECURITY_URL . 'admin/js/vigiguard-admin.js',
 			array( 'jquery' ),
 			$this->version,
 			true
@@ -197,7 +197,7 @@ class VigiGuard_Admin {
 		$issues = $this->get_security_issues();
 
 		// Load dashboard view.
-		include VIGIL_SECURITY_PATH . 'admin/views/dashboard.php';
+		include VIGIGUARD_SECURITY_PATH . 'admin/views/dashboard.php';
 	}
 
 	/**
@@ -241,7 +241,7 @@ class VigiGuard_Admin {
 		}
 
 		// Load settings view.
-		include VIGIL_SECURITY_PATH . 'admin/views/settings.php';
+		include VIGIGUARD_SECURITY_PATH . 'admin/views/settings.php';
 	}
 
 	/**
@@ -259,7 +259,7 @@ class VigiGuard_Admin {
 		$logs = $this->get_activity_logs();
 
 		// Load logs view.
-		include VIGIL_SECURITY_PATH . 'admin/views/logs.php';
+		include VIGIGUARD_SECURITY_PATH . 'admin/views/logs.php';
 	}
 
 	/**

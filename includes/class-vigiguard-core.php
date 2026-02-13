@@ -58,7 +58,7 @@ class VigiGuard_Core {
 	 */
 	public function __construct() {
 		$this->plugin_name = 'vigiguard-security';
-		$this->version     = VIGIL_SECURITY_VERSION;
+		$this->version     = VIGIGUARD_SECURITY_VERSION;
 
 		$this->load_dependencies();
 		$this->define_admin_hooks();
@@ -72,13 +72,13 @@ class VigiGuard_Core {
 	 */
 	private function load_dependencies() {
 		// Load module files with existence check.
-		$login_protection_file = VIGIL_SECURITY_PATH . 'includes/modules/class-login-protection.php';
-		$hardening_file        = VIGIL_SECURITY_PATH . 'includes/modules/class-hardening.php';
+		$login_protection_file = VIGIGUARD_SECURITY_PATH . 'includes/modules/class-login-protection.php';
+		$hardening_file        = VIGIGUARD_SECURITY_PATH . 'includes/modules/class-hardening.php';
 
-		$file_integrity_file   = VIGIL_SECURITY_PATH . 'includes/modules/class-file-integrity.php';
-		$uninstaller_file      = VIGIL_SECURITY_PATH . 'includes/class-vigiguard-uninstaller.php';  // Add this line
+		$file_integrity_file   = VIGIGUARD_SECURITY_PATH . 'includes/modules/class-file-integrity.php';
+		$uninstaller_file      = VIGIGUARD_SECURITY_PATH . 'includes/class-vigiguard-uninstaller.php';  // Add this line
 
-		$file_integrity_file   = VIGIL_SECURITY_PATH . 'includes/modules/class-file-integrity.php';  
+		$file_integrity_file   = VIGIGUARD_SECURITY_PATH . 'includes/modules/class-file-integrity.php';  
 		
 		if ( file_exists( $login_protection_file ) ) {
 			require_once $login_protection_file;
@@ -103,7 +103,7 @@ class VigiGuard_Core {
 
 
 		// Load admin class.
-		require_once VIGIL_SECURITY_PATH . 'admin/class-vigiguard-admin.php';
+		require_once VIGIGUARD_SECURITY_PATH . 'admin/class-vigiguard-admin.php';
 	}
 
 	/**
@@ -117,7 +117,7 @@ class VigiGuard_Core {
 		add_action( 'admin_notices', array( $this, 'show_activation_notice' ) );
 
 		// Add settings link on plugins page.
-		add_filter( 'plugin_action_links_' . VIGIL_SECURITY_BASENAME, array( $this, 'add_action_links' ) );
+		add_filter( 'plugin_action_links_' . VIGIGUARD_SECURITY_BASENAME, array( $this, 'add_action_links' ) );
 
 		// Initialize admin class.
 		if ( is_admin() ) {
